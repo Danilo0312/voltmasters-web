@@ -32,6 +32,10 @@ body {
         url('../img/BG.webp') center/cover no-repeat;
 }
 
+body::before {
+    position: absolute;
+}
+
 
 
 /* =========================================================
