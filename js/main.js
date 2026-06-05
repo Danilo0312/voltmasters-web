@@ -34,16 +34,30 @@ function reinitBootstrap() {
 // MAIN INIT
 // ============================
 
-document.addEventListener("DOMContentLoaded", () => {
+async function loadComponents() {
+    try {
+        const [header, footer] = await Promise.all([
+            fetch("partials/header.html"),
+            fetch("partials/footer.html")
+        ]);
 
-    // Load header & footer only ONCE
-    loadComponent("header", "partials/header.html", () => {
+        document.getElementById("header").innerHTML =
+            await header.text();
 
-});
-    loadComponent("footer", "partials/footer.html", () => {
+        document.getElementById("footer").innerHTML =
+            await footer.text();
+
+        reinitBootstrap();
         hideLoader();
-    });
 
+    } catch (err) {
+        console.error(err);
+        hideLoader();
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadComponents();
     initPageScripts();
 });
 
@@ -65,10 +79,6 @@ function hideLoader() {
 }
 
 
-// fallback safety (prevents infinite loader)
-window.addEventListener("load", () => {
-    setTimeout(hideLoader, 1500);
-});
 
 
 // ============================
