@@ -1,4 +1,46 @@
 // ============================
+//     NAVBAR HIDE ON SCROLL
+// ============================
+
+function initNavbar() {
+
+    const navbar = document.getElementById("mainNavbar");
+
+    if (!navbar) {
+        console.log("Navbar not found");
+        return;
+    }
+
+    let lastScroll = 0;
+
+window.addEventListener("scroll", () => {
+    const currentScroll = window.pageYOffset;
+
+    if (currentScroll <= 0) {
+        navbar.classList.remove("nav-hidden");
+        return;
+    }
+
+    if (
+        currentScroll > lastScroll &&
+        currentScroll > 100 &&
+        !navbar.classList.contains("nav-hidden")
+    ) {
+        navbar.classList.add("nav-hidden");
+    } else if (
+        currentScroll < lastScroll &&
+        navbar.classList.contains("nav-hidden")
+    ) {
+        navbar.classList.remove("nav-hidden");
+    }
+
+    lastScroll = currentScroll;
+});
+
+}
+
+
+// ============================
 // COMPONENT LOADER (HEADER/FOOTER)
 // ============================
 
@@ -12,7 +54,6 @@ function loadComponent(id, url, callback) {
         .then(data => {
             el.innerHTML = data;
 
-            // IMPORTANT: re-run Bootstrap bindings
             reinitBootstrap();
 
             if (callback) callback();
@@ -21,11 +62,11 @@ function loadComponent(id, url, callback) {
 }
 
 function reinitBootstrap() {
-    // Re-activate all collapse components
     document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
-        new bootstrap.Collapse(document.querySelector(btn.getAttribute('data-bs-target')), {
-            toggle: false
-        });
+        new bootstrap.Collapse(
+            document.querySelector(btn.getAttribute('data-bs-target')),
+            { toggle: false }
+        );
     });
 }
 
@@ -34,36 +75,24 @@ function reinitBootstrap() {
 // MAIN INIT
 // ============================
 
-async function loadComponents() {
-    try {
-        const [header, footer] = await Promise.all([
-            fetch("partials/header.html"),
-            fetch("partials/footer.html")
-        ]);
-
-        document.getElementById("header").innerHTML =
-            await header.text();
-
-        document.getElementById("footer").innerHTML =
-            await footer.text();
-
-        reinitBootstrap();
-        hideLoader();
-
-    } catch (err) {
-        console.error(err);
-        hideLoader();
-    }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-    loadComponents();
+
+    // Load Header
+    loadComponent("header", "partials/header.html", () => {
+        initNavbar();
+    });
+
+    // Load Footer
+    loadComponent("footer", "partials/footer.html", () => {
+        hideLoader();
+    });
+
     initPageScripts();
 });
 
 
 // ============================
-// LOADER CONTROL (SAFE)
+// LOADER CONTROL
 // ============================
 
 function hideLoader() {
@@ -78,27 +107,29 @@ function hideLoader() {
     }
 }
 
-
+window.addEventListener("load", () => {
+    setTimeout(hideLoader, 1500);
+});
 
 
 // ============================
-// PAGE SCRIPTS (SAFE INIT)
+// PAGE SCRIPTS
 // ============================
 
 function initPageScripts() {
 
-    // ============================
-    // INTERSECTION OBSERVER (SAFE)
-    // ============================
-
+    // Intersection Observer
     const elements = document.querySelectorAll(".observe");
 
     if (elements.length > 0) {
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+
                 if (entry.isIntersecting) {
                     entry.target.classList.add("active");
                 }
+
             });
         }, {
             threshold: 0.2
@@ -107,46 +138,42 @@ function initPageScripts() {
         elements.forEach(el => observer.observe(el));
     }
 
-
-    // ============================
-    // COUNTER ANIMATION (SAFE)
-    // ============================
-
+    // Counter Animation
     const counter = document.getElementById("projectCounter");
 
     if (counter) {
+
         let hasCounted = false;
 
         const counterObserver = new IntersectionObserver((entries) => {
+
             entries.forEach(entry => {
+
                 if (entry.isIntersecting && !hasCounted) {
+
                     hasCounted = true;
 
                     let count = 0;
                     const target = 30;
 
                     const interval = setInterval(() => {
+
                         count++;
                         counter.textContent = count;
 
                         if (count >= target) {
                             clearInterval(interval);
                         }
+
                     }, 50);
                 }
+
             });
+
         }, {
             threshold: 0.5
         });
 
         counterObserver.observe(counter);
     }
-}
-
-function initNavbar() {
-    const navbar = document.querySelector(".navbar");
-
-    if (!navbar) return;
-
-    console.log("Navbar initialized");
 }
